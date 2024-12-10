@@ -12,6 +12,16 @@ export default function SelectRecipesScreen() {
     'Søndag',
   ];
 
+  const generateShoppingList = async () => {
+    // 1. Get all selected recipes
+    // 2. Calculate ingredients based on number of servings
+    // 3. Group similar ingredients
+    // 4. Match with REMA1000 products for price
+    // 5. Generate shopping list
+    alert('Generating shopping list');
+  };
+
+
   return (
     <ScrollView className="flex-1 bg-white dark:bg-gray-900">
       <View className="p-4 space-y-4">
@@ -34,6 +44,13 @@ export default function SelectRecipesScreen() {
         <Link href="/" className="text-blue-500 dark:text-blue-400">
           ← Tilbage til forside
         </Link>
+        <View className="mt-4">
+          <Pressable
+            className="bg-blue-500 p-4 rounded-lg"
+            onPress={generateShoppingList}>
+            <Text className="text-white text-center">Generer Indkøbsliste</Text>
+          </Pressable>
+        </View>
       </View>
     </ScrollView>
   );
