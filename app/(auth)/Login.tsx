@@ -62,6 +62,13 @@ const handleLogin = async () => {
           </Pressable>
         </Link>
       </View>
+      <View className="mt-8">
+        <Link href="/(tabs)/SelectRecipes" asChild>
+          <Pressable className="p-4">
+            <Text className="text-blue-500 text-center">← Tilbage til opskrifter</Text>
+          </Pressable>
+        </Link>
+      </View>
     </View>
   );
 }

@@ -1,6 +1,6 @@
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { useState } from 'react';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useAuth } from '../security/AuthProvider';
 
 export default function RegisterScreen() {
@@ -60,12 +60,25 @@ export default function RegisterScreen() {
         <Text className="text-white text-center font-semibold">Opret bruger</Text>
       </Pressable>
 
-      <Pressable 
-        onPress={() => router.push('/(auth)/Login')}
-        className="p-4"
-      >
-        <Text className="text-blue-500 text-center">Har du allerede en bruger? Log ind her</Text>
-      </Pressable>
+      <View className="flex-row justify-center items-center mt-4">
+        <Text className="text-gray-600 dark:text-gray-400">
+          Har du allerede en bruger?{" "}
+        </Text>
+        <Link href="/(auth)/Login" asChild>
+          <Pressable>
+            <Text className="text-blue-500 font-bold">
+              Log ind her!
+            </Text>
+          </Pressable>
+        </Link>
+      </View>
+      <View className="mt-8">
+        <Link href="/(tabs)/SelectRecipes" asChild>
+          <Pressable className="p-4">
+            <Text className="text-blue-500 text-center">← Tilbage til opskrifter</Text>
+          </Pressable>
+        </Link>
+      </View>
     </View>
   );
 }
