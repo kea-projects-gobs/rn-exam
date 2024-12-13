@@ -10,6 +10,13 @@ export default function AuthLayout() {
           headerShown: true 
         }} 
       />
+      <Stack.Screen 
+        name="Register" 
+        options={{ 
+          title: 'Opret bruger',
+          headerShown: true 
+        }} 
+      />
     </Stack>
   );
 }

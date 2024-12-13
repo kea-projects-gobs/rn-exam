@@ -1,12 +1,13 @@
 import { createContext, useState, ReactNode, useContext, useEffect } from "react";
-import { authProvider, User } from "../lib/auth/authUtils";
-import { LoginResponse, LoginRequest } from "../lib/auth/authUtils";
+import { authProvider } from "../lib/auth/authUtils";
+import { LoginResponse, LoginRequest, RegisterResponse, RegisterRequest, User } from "../lib/types/types";
 import { saveAuthData, getAuthData, clearAuthData } from "../lib/auth/storage";
 
 interface AuthContextType {
   username: string | null;
   signIn: (user: User) => Promise<LoginResponse>;
   signOut: () => Promise<void>;
+  register: (user: RegisterRequest) => Promise<RegisterResponse>;
   isLoggedIn: () => boolean;
   isLoggedInAs: (role: string[]) => boolean;
 }
@@ -43,6 +44,11 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     await clearAuthData();
   };
 
+  const register = async (user_: RegisterRequest) => {
+    const response = await authProvider.register(user_);
+    return response;
+  };
+
   const isLoggedIn = () => {
     return username != null;
   };
@@ -51,7 +57,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     return roles?.some((r) => requiredRoles.includes(r)) || false;
   };
 
-  const value = { username, isLoggedIn, isLoggedInAs, signIn, signOut };
+  const value = { username, isLoggedIn, isLoggedInAs, signIn, signOut, register };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

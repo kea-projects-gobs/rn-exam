@@ -7,7 +7,7 @@ export default function AuthStatus() {
 
   if (!auth.isLoggedIn()) {
     return (
-      <Link href="../(auth)/login" asChild>
+      <Link href="../(auth)/Login" asChild>
         <Pressable className="p-4">
           <Text className="text-blue-500">Login</Text>
         </Pressable>
@@ -15,7 +15,7 @@ export default function AuthStatus() {
     );
   } else {
     return (
-      <Link href="../(auth)/login" asChild>
+      <Link href="../(auth)/Login" asChild>
         <Pressable className="p-4">
           <Text className="text-blue-500">
             Logout (Logged in as {auth.username})
