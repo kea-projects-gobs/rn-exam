@@ -1,5 +1,5 @@
-import { API_URL } from "../api/settings";
-import { makeOptions, handleHttpErrors } from "../api/utils/fetchUtils";
+import { API_URL } from "./settings";
+import { makeOptions, handleHttpErrors } from "./utils/fetchUtils";
 import { LoginResponse, RegisterRequest, RegisterResponse } from "../types/types";
 import { LoginRequest } from "../types/types";
 const LOGIN_URL = API_URL + "/auth/login";

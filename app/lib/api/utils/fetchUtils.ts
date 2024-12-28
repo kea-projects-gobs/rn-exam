@@ -1,6 +1,11 @@
-import { getAuthData } from '../../auth/storage';
+import { getAuthData, handleExpiredToken } from '../../auth/storage';
 
 export async function handleHttpErrors(res: Response) {
+  // If the response is 401, handle the expired token (by clearing the token and redirecting to the login page)
+  if (res.status === 401) {
+    await handleExpiredToken();
+  }
+
   if (!res.ok) {
     const errorResponse = await res.json();
     // Use the error message from the backend, or fallback to a generic message

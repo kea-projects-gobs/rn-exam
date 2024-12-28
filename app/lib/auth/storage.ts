@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import { router } from 'expo-router';
 
 export async function saveAuthData(token: string, username: string, roles: string[]) {
   await SecureStore.setItemAsync('token', token);
@@ -17,4 +18,10 @@ export async function clearAuthData() {
   await SecureStore.deleteItemAsync('token');
   await SecureStore.deleteItemAsync('username');
   await SecureStore.deleteItemAsync('roles');
+}
+
+export async function handleExpiredToken() {
+  await clearAuthData();
+  router.replace('/(auth)/Login');
+  throw new Error('Session expired. Please login again.');
 }
