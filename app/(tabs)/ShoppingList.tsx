@@ -5,9 +5,14 @@ import { useAuth } from '../security/AuthProvider';
 import { mealPlanApi } from '../lib/api/mealPlanApi';
 import { ShoppingListItem, MealPlan } from '../lib/types/types';
 
+// Extend ShoppingListItem to include checked state
+interface ShoppingListItemWithState extends ShoppingListItem {
+  checked: boolean;
+}
+
 export default function ShoppingListScreen() {
   const { username, isLoggedIn } = useAuth();
-  const [items, setItems] = useState<ShoppingListItem[]>([]);
+  const [items, setItems] = useState<ShoppingListItemWithState[]>([]);
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -27,7 +32,8 @@ export default function ShoppingListScreen() {
         mealPlanApi.getShoppingList(username!),
         mealPlanApi.getMealPlansByUser(username!)
       ]);
-      setItems(list);
+      // Add checked property to each item
+      setItems(list.map(item => ({ ...item, checked: false })));
       setMealPlans(plans);
       setError(null);
     } catch (err) {
@@ -79,6 +85,16 @@ export default function ShoppingListScreen() {
     );
   };
 
+  const toggleItem = (productId: number) => {
+    setItems(currentItems => 
+      currentItems.map(item => 
+        item.productId === productId 
+          ? { ...item, checked: !item.checked }
+          : item
+      )
+    );
+  };
+
   function onRefresh() {
     setRefreshing(true);
     loadData();
@@ -102,13 +118,19 @@ export default function ShoppingListScreen() {
     );
   }
 
-  const total = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  // Calculate total only for unchecked items
+  const totalRemaining = items
+    .filter(item => !item.checked)
+    .reduce((sum, item) => sum + item.totalPrice, 0);
+  // Calculate total for all items
+  const totalAll = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
   return (
     <ScrollView 
       className="flex-1 bg-white dark:bg-gray-900"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
+      {/* Header view */}
       <View className="p-4 space-y-4">
         <View className="flex-row justify-between items-center mb-4 w-full">
           <Text className="text-xl font-bold text-gray-900 dark:text-white flex-1">
@@ -136,25 +158,70 @@ export default function ShoppingListScreen() {
           </Text>
         ) : (
           <>
+          {/* Items view */}
             <View className="space-y-2">
               {items.map((item) => (
-                <View key={item.productId} 
-                  className="flex-row justify-between items-center p-4 bg-gray-100 dark:bg-gray-800 rounded-lg mb-2">
-                  <View>
-                    <Text className="text-gray-900 text-lg dark:text-white">{item.name}</Text>
-                    <Text className="text-gray-500 dark:text-gray-400">Antal: {item.quantity}</Text>
+                <Pressable
+                  key={item.productId} 
+                  onPress={() => toggleItem(item.productId)}
+                  className={`flex-row justify-between items-center p-4 rounded-lg mb-2
+                    ${item.checked 
+                      ? 'bg-gray-200 dark:bg-gray-700' 
+                      : 'bg-gray-100 dark:bg-gray-800'}`}
+                >
+                  <View className="flex-row items-center">
+                    <View className={`w-6 h-6 rounded-full border-2 mr-3 
+                      ${item.checked 
+                        ? 'bg-green-500 border-green-500' 
+                        : 'border-gray-400'}`}
+                    >
+                      {item.checked && (
+                        <Text className="text-white text-center">✓</Text>
+                      )}
+                    </View>
+                    <View>
+                      <Text className={`text-lg 
+                        ${item.checked 
+                          ? 'text-gray-500 dark:text-gray-400 line-through' 
+                          : 'text-gray-900 dark:text-white'}`}>
+                        {item.name}
+                      </Text>
+                      <Text className={`
+                        ${item.checked 
+                          ? 'text-gray-400 dark:text-gray-500' 
+                          : 'text-gray-500 dark:text-gray-400'}`}>
+                        Antal: {item.quantity}
+                      </Text>
+                    </View>
                   </View>
-                  <Text className="text-gray-500 text-lg dark:text-gray-400">
+                  <Text className={`text-lg 
+                    ${item.checked 
+                      ? 'text-gray-400 dark:text-gray-500 line-through' 
+                      : 'text-gray-500 dark:text-gray-400'}`}>
                     {item.totalPrice.toFixed(2)}kr
                   </Text>
-                </View>
+                </Pressable>
               ))}
             </View>
 
-            <View className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <Text className="text-lg font-bold text-gray-900 dark:text-white">
-                Total: {total.toFixed(2)}kr
-              </Text>
+            {/* Total view */}  
+            <View className="p-6 bg-gray-100 dark:bg-gray-800 rounded-2xl shadow-sm space-y-3">
+              <View className="flex-row justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3">
+                <Text className="text-base text-gray-500 dark:text-gray-400">
+                  Total
+                </Text>
+                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {totalAll.toFixed(2)}kr
+                </Text>
+              </View>
+              <View className="flex-row justify-between items-center pt-3">
+                <Text className="text-base text-gray-500 dark:text-gray-400">
+                  Resterende
+                </Text>
+                <Text className="text-xl font-semibold text-green-600 dark:text-green-400">
+                  {totalRemaining.toFixed(2)}kr
+                </Text>
+              </View>
             </View>
           </>
         )}
