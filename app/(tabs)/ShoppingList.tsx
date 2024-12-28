@@ -1,19 +1,20 @@
-import { View, Text, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Pressable, Alert } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../security/AuthProvider';
 import { mealPlanApi } from '../lib/api/mealPlanApi';
-import { ShoppingListItem } from '../lib/types/types';
+import { ShoppingListItem, MealPlan } from '../lib/types/types';
 
 export default function ShoppingListScreen() {
   const { username, isLoggedIn } = useAuth();
   const [items, setItems] = useState<ShoppingListItem[]>([]);
+  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isFocused = useIsFocused();
 
-  async function loadShoppingList() {
+  async function loadData() {
     if (!isLoggedIn()) {
       setLoading(false);
       return;
@@ -21,12 +22,18 @@ export default function ShoppingListScreen() {
 
     try {
       setLoading(true);
-      const list = await mealPlanApi.getShoppingList(username!);
+      // Load both shopping list and meal plans
+      const [list, plans] = await Promise.all([
+        mealPlanApi.getShoppingList(username!),
+        mealPlanApi.getMealPlansByUser(username!)
+      ]);
       setItems(list);
+      setMealPlans(plans);
       setError(null);
     } catch (err) {
       setError('Kunne ikke hente indkøbsliste');
       setItems([]);
+      setMealPlans([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -35,13 +42,46 @@ export default function ShoppingListScreen() {
 
   useEffect(() => {
     if (isFocused) {
-      loadShoppingList();
+      loadData();
     }
   }, [isFocused]);
 
+  const handleDeleteMealPlan = async () => {
+    Alert.alert(
+      'Slet indkøbsliste',
+      'Er du sikker på, at du vil slette din indkøbsliste?',
+      [
+        { text: 'Annuller', style: 'cancel' },
+        {
+          text: 'Slet',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoading(true); // Show loading while deleting
+              await Promise.all(
+                mealPlans.map(plan => mealPlanApi.deleteMealPlan(plan.id))
+              );
+              // Clear states immediately after successful deletion
+              setItems([]);
+              setMealPlans([]);
+              setError(null);
+            } catch (err) {
+              console.error('Delete error:', err);
+              setError('Kunne ikke slette indkøbsliste');
+            } finally {
+              setLoading(false);
+              // Reload data to ensure everything is in sync
+              loadData();
+            }
+          }
+        }
+      ]
+    );
+  };
+
   function onRefresh() {
     setRefreshing(true);
-    loadShoppingList();
+    loadData();
   }
 
   if (loading) {
@@ -67,20 +107,27 @@ export default function ShoppingListScreen() {
   return (
     <ScrollView 
       className="flex-1 bg-white dark:bg-gray-900"
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View className="p-4 space-y-4">
-        <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-          Din Indkøbsliste
-        </Text>
+        <View className="flex-row justify-between items-center mb-4 w-full">
+          <Text className="text-xl font-bold text-gray-900 dark:text-white flex-1">
+            Din Indkøbsliste
+          </Text>
+          {items.length > 0 && (
+            <View className="ml-4">
+              <Pressable 
+                onPress={handleDeleteMealPlan}
+                className="bg-red-500 px-4 py-2 rounded-lg"
+              >
+                <Text className="text-white text-base">Slet liste</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
 
         {error && (
-          <Text className="text-red-500 text-center">{error}</Text>
+          <Text className="text-red-500 text-center my-2">{error}</Text>
         )}
 
         {items.length === 0 ? (

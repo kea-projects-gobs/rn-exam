@@ -11,7 +11,17 @@ export async function handleHttpErrors(res: Response) {
     // Use the error message from the backend, or fallback to a generic message
     throw new Error(errorResponse.error || errorResponse.message || "Fejl ved login");
   }
-  return res.json();
+  
+  // For DELETE requests or other empty responses
+  if (res.status === 204 || res.headers.get('content-length') === '0') {
+    return null;
+}
+
+try {
+    return await res.json();
+} catch {
+    return null;
+}
 }
 
 export async function makeOptions(method: string, body: object | null, addToken?: boolean): Promise<RequestInit> {
