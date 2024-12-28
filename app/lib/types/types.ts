@@ -22,3 +22,30 @@ export interface RegisterResponse {
   roleNames: string[]; 
   email: string;
 }
+
+export interface Recipe {
+  id: number;
+  name: string;
+  description: string;
+  preparation_time: number;
+  servings: number;
+}
+
+export interface Product {
+  rema_id: number;
+  name: string;
+  price: number;
+}
+
+export interface RecipeProduct {
+  recipe_id: number;
+  products_rema_id: number;
+  quantity: number;
+}
+
+export interface MealPlan {
+  id: number;
+  user_username: string;
+  recipe_id: number;
+  day_of_week: string;
+}
