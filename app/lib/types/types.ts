@@ -27,25 +27,36 @@ export interface Recipe {
   id: number;
   name: string;
   description: string;
-  preparation_time: number;
+  preparationTime: number;
   servings: number;
+  ingredients: Record<number, number>;
 }
 
 export interface Product {
-  rema_id: number;
+  id: number;
   name: string;
   price: number;
 }
 
-export interface RecipeProduct {
-  recipe_id: number;
-  products_rema_id: number;
-  quantity: number;
-}
-
 export interface MealPlan {
   id: number;
-  user_username: string;
-  recipe_id: number;
-  day_of_week: string;
+  username: string;
+  recipeId: number;
+  recipeName: string;
+  dayOfWeek: string;
 }
+
+export interface MealPlanRequest {
+  username: string;
+  recipeId: number;
+  dayOfWeek: string;
+}
+
+export interface ShoppingListItem {
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  totalPrice: number;
+}
+

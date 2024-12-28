@@ -1,5 +1,5 @@
 import { createContext, useState, ReactNode, useContext, useEffect } from "react";
-import { authProvider } from "../lib/auth/authUtils";
+import { authProvider } from "../lib/api/authApi";
 import { LoginResponse, LoginRequest, RegisterResponse, RegisterRequest, User } from "../lib/types/types";
 import { saveAuthData, getAuthData, clearAuthData } from "../lib/auth/storage";
 
