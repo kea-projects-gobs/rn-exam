@@ -1,6 +1,6 @@
 import { createContext, useState, ReactNode, useContext, useEffect } from "react";
 import { authProvider } from "../lib/auth/authUtils";
-import { LoginResponse, LoginRequest, RegisterResponse, RegisterRequest, User } from "../lib/auth/types";
+import { LoginResponse, LoginRequest, RegisterResponse, RegisterRequest, User } from "../lib/types/types";
 import { saveAuthData, getAuthData, clearAuthData } from "../lib/auth/storage";
 
 interface AuthContextType {
