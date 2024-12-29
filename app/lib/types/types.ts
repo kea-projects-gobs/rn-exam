@@ -29,6 +29,8 @@ export interface Recipe {
   description: string;
   preparationTime: number;
   servings: number;
+  imageUrl: string;
+  instructions: string[];
   ingredients: Record<number, number>;
 }
 
