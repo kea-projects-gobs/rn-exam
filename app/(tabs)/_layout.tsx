@@ -16,6 +16,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="SelectRecipes"
         options={{
+          title: 'Planlæg',
+          tabBarLabel: 'Planlæg',
+        }}
+      />
+      <Tabs.Screen
+        name="Recipe"
+        options={{
           title: 'Opskrifter',
           tabBarLabel: 'Opskrifter',
         }}
