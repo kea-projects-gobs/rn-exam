@@ -1,9 +1,25 @@
-import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Pressable, Alert } from 'react-native';
-import { useIsFocused } from '@react-navigation/native';
-import { useState, useEffect } from 'react';
-import { useAuth } from '../security/AuthProvider';
-import { mealPlanApi } from '../lib/api/mealPlanApi';
-import { ShoppingListItem, MealPlan } from '../lib/types/types';
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
+  Pressable,
+  Alert,
+} from "react-native";
+import { useIsFocused } from "@react-navigation/native";
+import { useState, useEffect } from "react";
+import { useAuth } from "../security/AuthProvider";
+import { mealPlanApi } from "../lib/api/mealPlanApi";
+import { ShoppingListItem, MealPlan } from "../lib/types/types";
+
+const basicIngredients = [
+  "salt",
+  "grana padano",
+  "soy sauce",
+  "tomatpuré",
+  "eks. jomfru olivenolie",
+];
 
 // Extend ShoppingListItem to include checked state
 interface ShoppingListItemWithState extends ShoppingListItem {
@@ -19,6 +35,20 @@ export default function ShoppingListScreen() {
   const [error, setError] = useState<string | null>(null);
   const isFocused = useIsFocused();
 
+  const basicItemsMap = new Map();
+  items.forEach((item) => {
+    if (basicIngredients.includes(item.name.toLowerCase())) {
+      if (!basicItemsMap.has(item.name.toLowerCase())) {
+        basicItemsMap.set(item.name.toLowerCase(), { ...item, quantity: 1, totalPrice: item.price });
+      }
+    }
+  });
+  const basicItems = Array.from(basicItemsMap.values());
+
+  const otherItems = items.filter(
+    (item) => !basicIngredients.includes(item.name.toLowerCase())
+  );
+
   async function loadData() {
     if (!isLoggedIn()) {
       setLoading(false);
@@ -30,14 +60,14 @@ export default function ShoppingListScreen() {
       // Load both shopping list and meal plans
       const [list, plans] = await Promise.all([
         mealPlanApi.getShoppingList(username!),
-        mealPlanApi.getMealPlansByUser(username!)
+        mealPlanApi.getMealPlansByUser(username!),
       ]);
       // Add checked property to each item
-      setItems(list.map(item => ({ ...item, checked: false })));
+      setItems(list.map((item) => ({ ...item, checked: false })));
       setMealPlans(plans);
       setError(null);
     } catch (err) {
-      setError('Kunne ikke hente indkøbsliste');
+      setError("Kunne ikke hente indkøbsliste");
       setItems([]);
       setMealPlans([]);
     } finally {
@@ -54,41 +84,41 @@ export default function ShoppingListScreen() {
 
   const handleDeleteMealPlan = async () => {
     Alert.alert(
-      'Slet indkøbsliste',
-      'Er du sikker på, at du vil slette din indkøbsliste?',
+      "Slet indkøbsliste",
+      "Er du sikker på, at du vil slette din indkøbsliste?",
       [
-        { text: 'Annuller', style: 'cancel' },
+        { text: "Annuller", style: "cancel" },
         {
-          text: 'Slet',
-          style: 'destructive',
+          text: "Slet",
+          style: "destructive",
           onPress: async () => {
             try {
               setLoading(true); // Show loading while deleting
               await Promise.all(
-                mealPlans.map(plan => mealPlanApi.deleteMealPlan(plan.id))
+                mealPlans.map((plan) => mealPlanApi.deleteMealPlan(plan.id))
               );
               // Clear states immediately after successful deletion
               setItems([]);
               setMealPlans([]);
               setError(null);
             } catch (err) {
-              console.error('Delete error:', err);
-              setError('Kunne ikke slette indkøbsliste');
+              console.error("Delete error:", err);
+              setError("Kunne ikke slette indkøbsliste");
             } finally {
               setLoading(false);
               // Reload data to ensure everything is in sync
               loadData();
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
 
   const toggleItem = (productId: number) => {
-    setItems(currentItems => 
-      currentItems.map(item => 
-        item.productId === productId 
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.productId === productId
           ? { ...item, checked: !item.checked }
           : item
       )
@@ -120,108 +150,167 @@ export default function ShoppingListScreen() {
 
   // Calculate total only for unchecked items
   const totalRemaining = items
-    .filter(item => !item.checked)
+    .filter((item) => !item.checked)
     .reduce((sum, item) => sum + item.totalPrice, 0);
   // Calculate total for all items
   const totalAll = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
   return (
-    <ScrollView 
+    <ScrollView
       className="flex-1 bg-white dark:bg-gray-900"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
     >
-      {/* Header view */}
       <View className="p-4 space-y-4">
-        <View className="flex-row justify-between items-center mb-4 w-full">
-          <Text className="text-xl font-bold text-gray-900 dark:text-white flex-1">
-            Din Indkøbsliste
-          </Text>
-          {items.length > 0 && (
-            <View className="ml-4">
-              <Pressable 
-                onPress={handleDeleteMealPlan}
-                className="bg-red-500 px-4 py-2 rounded-lg"
-              >
-                <Text className="text-white text-base">Slet liste</Text>
-              </Pressable>
-            </View>
-          )}
-        </View>
+        <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+          Din Indkøbsliste
+        </Text>
 
         {error && (
           <Text className="text-red-500 text-center my-2">{error}</Text>
         )}
 
-        {items.length === 0 ? (
-          <Text className="text-gray-500 dark:text-gray-400 text-center">
-            Din indkøbsliste er tom
-          </Text>
-        ) : (
+        {/* Basic Ingredients Section */}
+        {basicItems.length > 0 && (
           <>
-          {/* Items view */}
+            <Text className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              Basale Ingredienser
+            </Text>
             <View className="space-y-2">
-              {items.map((item) => (
+              {basicItems.map((item) => (
                 <Pressable
-                  key={item.productId} 
+                  key={item.productId}
                   onPress={() => toggleItem(item.productId)}
                   className={`flex-row justify-between items-center p-4 rounded-lg mb-2
-                    ${item.checked 
-                      ? 'bg-gray-200 dark:bg-gray-700' 
-                      : 'bg-gray-100 dark:bg-gray-800'}`}
+                    ${
+                      item.checked
+                        ? "bg-gray-200 dark:bg-gray-700"
+                        : "bg-gray-100 dark:bg-gray-800"
+                    }`}
                 >
                   <View className="flex-row items-center">
-                    <View className={`w-6 h-6 rounded-full border-2 mr-3 
-                      ${item.checked 
-                        ? 'bg-green-500 border-green-500' 
-                        : 'border-gray-400'}`}
+                    <View
+                      className={`w-6 h-6 rounded-full border-2 mr-3 
+                      ${
+                        item.checked
+                          ? "bg-green-500 border-green-500"
+                          : "border-gray-400"
+                      }`}
                     >
                       {item.checked && (
                         <Text className="text-white text-center">✓</Text>
                       )}
                     </View>
                     <View>
-                      <Text className={`text-lg 
-                        ${item.checked 
-                          ? 'text-gray-500 dark:text-gray-400 line-through' 
-                          : 'text-gray-900 dark:text-white'}`}>
+                      <Text
+                        className={`text-lg 
+                        ${
+                          item.checked
+                            ? "text-gray-500 dark:text-gray-400 line-through"
+                            : "text-gray-900 dark:text-white"
+                        }`}
+                      >
                         {item.name}
                       </Text>
-                      <Text className={`
-                        ${item.checked 
-                          ? 'text-gray-400 dark:text-gray-500' 
-                          : 'text-gray-500 dark:text-gray-400'}`}>
+                      <Text
+                        className={`
+                        ${
+                          item.checked
+                            ? "text-gray-400 dark:text-gray-500"
+                            : "text-gray-500 dark:text-gray-400"
+                        }`}
+                      >
                         Antal: {item.quantity}
                       </Text>
                     </View>
                   </View>
-                  <Text className={`text-lg 
-                    ${item.checked 
-                      ? 'text-gray-400 dark:text-gray-500 line-through' 
-                      : 'text-gray-500 dark:text-gray-400'}`}>
+                  <Text
+                    className={`text-lg 
+                    ${
+                      item.checked
+                        ? "text-gray-400 dark:text-gray-500 line-through"
+                        : "text-gray-500 dark:text-gray-400"
+                    }`}
+                  >
                     {item.totalPrice.toFixed(2)}kr
                   </Text>
                 </Pressable>
               ))}
             </View>
+          </>
+        )}
 
-            {/* Total view */}  
-            <View className="p-6 bg-gray-100 dark:bg-gray-800 rounded-2xl shadow-sm space-y-3">
-              <View className="flex-row justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3">
-                <Text className="text-base text-gray-500 dark:text-gray-400">
-                  Total
-                </Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {totalAll.toFixed(2)}kr
-                </Text>
-              </View>
-              <View className="flex-row justify-between items-center pt-3">
-                <Text className="text-base text-gray-500 dark:text-gray-400">
-                  Resterende
-                </Text>
-                <Text className="text-xl font-semibold text-green-600 dark:text-green-400">
-                  {totalRemaining.toFixed(2)}kr
-                </Text>
-              </View>
+        {/* Other Ingredients Section */}
+        {otherItems.length === 0 ? (
+          <Text className="text-gray-500 dark:text-gray-400 text-center">
+            Din indkøbsliste er tom
+          </Text>
+        ) : (
+          <>
+            <Text className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              Other Ingredients
+            </Text>
+            <View className="space-y-2">
+              {otherItems.map((item) => (
+                <Pressable
+                  key={item.productId}
+                  onPress={() => toggleItem(item.productId)}
+                  className={`flex-row justify-between items-center p-4 rounded-lg mb-2
+                    ${
+                      item.checked
+                        ? "bg-gray-200 dark:bg-gray-700"
+                        : "bg-gray-100 dark:bg-gray-800"
+                    }`}
+                >
+                  <View className="flex-row items-center">
+                    <View
+                      className={`w-6 h-6 rounded-full border-2 mr-3 
+                      ${
+                        item.checked
+                          ? "bg-green-500 border-green-500"
+                          : "border-gray-400"
+                      }`}
+                    >
+                      {item.checked && (
+                        <Text className="text-white text-center">✓</Text>
+                      )}
+                    </View>
+                    <View>
+                      <Text
+                        className={`text-lg 
+                        ${
+                          item.checked
+                            ? "text-gray-500 dark:text-gray-400 line-through"
+                            : "text-gray-900 dark:text-white"
+                        }`}
+                      >
+                        {item.name}
+                      </Text>
+                      <Text
+                        className={`
+                        ${
+                          item.checked
+                            ? "text-gray-400 dark:text-gray-500"
+                            : "text-gray-500 dark:text-gray-400"
+                        }`}
+                      >
+                        Antal: {item.quantity}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text
+                    className={`text-lg 
+                    ${
+                      item.checked
+                        ? "text-gray-400 dark:text-gray-500 line-through"
+                        : "text-gray-500 dark:text-gray-400"
+                    }`}
+                  >
+                    {item.totalPrice.toFixed(2)}kr
+                  </Text>
+                </Pressable>
+              ))}
             </View>
           </>
         )}
