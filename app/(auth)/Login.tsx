@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '../security/AuthProvider';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
@@ -12,7 +12,7 @@ export default function LoginScreen() {
 const handleLogin = async () => {
   try {
     await auth.signIn({ username, password });
-    router.replace('/(tabs)/Profile');
+    router.replace('/(tabs)/SelectRecipes');
   } catch (error) {
     setError(error instanceof Error ? error.message : 'Fejl ved login.');
   }
@@ -54,21 +54,17 @@ const handleLogin = async () => {
         <Text className="text-gray-600 dark:text-gray-400">
           Har du ikke en bruger?{" "}
         </Text>
-        <Link href="/(auth)/Register" asChild>
-          <Pressable>
+          <Pressable onPress={() => router.push('/(auth)/Register')}>
             <Text className="text-blue-500 font-bold">
               Opret en her!
             </Text>
           </Pressable>
-        </Link>
       </View>
-      <View className="mt-8">
-        <Link href="/(tabs)/SelectRecipes" asChild>
-          <Pressable className="p-4">
-            <Text className="text-blue-500 text-center">← Tilbage til opskrifter</Text>
+      <View className="mt-8">   
+          <Pressable className="p-4" onPress={() => router.push('/(tabs)/SelectRecipes')}>
+            <Text className="text-blue-500 text-center">← Tilbage til planlægning</Text>
           </Pressable>
-        </Link>
-      </View>
+    </View>
     </View>
   );
 }
