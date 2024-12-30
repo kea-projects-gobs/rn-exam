@@ -44,21 +44,7 @@ export default function ShoppingListScreen() {
   const [error, setError] = useState<string | null>(null);
   const isFocused = useIsFocused();
 
-  const basicItemsMap = new Map();
-  items.forEach((item) => {
-    if (basicIngredients.includes(item.name.toLowerCase())) {
-      if (!basicItemsMap.has(item.name.toLowerCase())) {
-        basicItemsMap.set(item.name.toLowerCase(), { ...item, quantity: 1, totalPrice: item.price });
-      }
-    }
-  });
-  const basicItems = Array.from(basicItemsMap.values());
-
-  const otherItems = items.filter(
-    (item) => !basicIngredients.includes(item.name.toLowerCase())
-  );
-
-  async function loadData() {
+async function loadData() {
     if (!isLoggedIn()) {
       setLoading(false);
       return;
@@ -90,6 +76,20 @@ export default function ShoppingListScreen() {
       loadData();
     }
   }, [isFocused]);
+
+  const basicItemsMap = new Map();
+  items.forEach((item) => {
+    if (basicIngredients.includes(item.name.toLowerCase())) {
+      if (!basicItemsMap.has(item.name.toLowerCase())) {
+        basicItemsMap.set(item.name.toLowerCase(), { ...item, quantity: 1, totalPrice: item.price });
+      }
+    }
+  });
+  const basicItems = Array.from(basicItemsMap.values());
+
+  const otherItems = items.filter(
+    (item) => !basicIngredients.includes(item.name.toLowerCase())
+  );
 
   const handleDeleteMealPlan = async () => {
     Alert.alert(
@@ -134,6 +134,22 @@ export default function ShoppingListScreen() {
     );
   };
 
+  
+    // Calculate totals by separating basic and other items
+    const totalRemaining = [
+      ...Array.from(basicItemsMap.values()), // Use modified basic items
+      ...otherItems
+    ]
+      .filter((item) => !item.checked)
+      .reduce((sum, item) => sum + item.totalPrice, 0);
+  
+    // Calculate total for all items
+    const totalAll = [
+      ...Array.from(basicItemsMap.values()), // Use modified basic items
+      ...otherItems
+    ]
+      .reduce((sum, item) => sum + item.totalPrice, 0);
+
   function onRefresh() {
     setRefreshing(true);
     loadData();
@@ -157,24 +173,30 @@ export default function ShoppingListScreen() {
     );
   }
 
-  // Calculate total only for unchecked items
-  const totalRemaining = items
-    .filter((item) => !item.checked)
-    .reduce((sum, item) => sum + item.totalPrice, 0);
-  // Calculate total for all items
-  const totalAll = items.reduce((sum, item) => sum + item.totalPrice, 0);
-
   return (
     <ScrollView
       className="flex-1 bg-white dark:bg-gray-900"
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-    >
+      >
+      {/* Header view */}
       <View className="p-4 space-y-4">
-        <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-          Din Indkøbsliste
-        </Text>
+        <View className="flex-row justify-between items-center mb-4 w-full">
+          <Text className="text-xl font-bold text-gray-900 dark:text-white flex-1">
+            Din Indkøbsliste
+          </Text>
+          {items.length > 0 && (
+            <View className="ml-4">
+              <Pressable 
+                onPress={handleDeleteMealPlan}
+                className="bg-red-500 px-4 py-2 rounded-lg"
+              >
+                <Text className="text-white text-base">Slet liste</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
 
         {error && (
           <Text className="text-red-500 text-center my-2">{error}</Text>
@@ -258,7 +280,7 @@ export default function ShoppingListScreen() {
         ) : (
           <>
             <Text className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              Other Ingredients
+              Andre ingredienser
             </Text>
             <View className="space-y-2">
               {otherItems.map((item) => (
