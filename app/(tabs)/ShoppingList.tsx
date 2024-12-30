@@ -16,9 +16,18 @@ import { ShoppingListItem, MealPlan } from "../lib/types/types";
 const basicIngredients = [
   "salt",
   "grana padano",
-  "soy sauce",
+  "gurkemeje",
   "tomatpuré",
+  "soya",
   "eks. jomfru olivenolie",
+  "sesamfrø",
+  "paprika",
+  "grønsagsbouillon",
+  "estragon",
+  "dijonsennep",
+  "balsamikoeddike",
+  "hvedemel",
+  "tomatpuré",
 ];
 
 // Extend ShoppingListItem to include checked state
