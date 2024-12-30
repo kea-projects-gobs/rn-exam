@@ -9,14 +9,14 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   const auth = useAuth();
 
-const handleLogin = async () => {
-  try {
-    await auth.signIn({ username, password });
-    router.replace('/(tabs)/SelectRecipes');
-  } catch (error) {
-    setError(error instanceof Error ? error.message : 'Fejl ved login.');
-  }
-};
+  const handleLogin = async () => {
+    try {
+      await auth.signIn({ username, password });
+      router.push('/(tabs)/SelectRecipes');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Fejl ved login.');
+    }
+  };
 
   return (
     <View className="flex-1 justify-center p-4 bg-white dark:bg-gray-900">
