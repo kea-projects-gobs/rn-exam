@@ -1,27 +1,32 @@
 import { getAuthData, handleExpiredToken } from '../../auth/storage';
 
 export async function handleHttpErrors(res: Response) {
-  // If the response is 401, handle the expired token (by clearing the token and redirecting to the login page)
+  // Special case for login endpoint failures
+  if (res.url.includes('/auth/login') && !res.ok) {
+    const errorResponse = await res.json();
+    throw new Error(errorResponse.error || errorResponse.message || "Fejl ved login");
+  }
+
+  // Handle expired token for other endpoints
   if (res.status === 401) {
     await handleExpiredToken();
   }
 
   if (!res.ok) {
     const errorResponse = await res.json();
-    // Use the error message from the backend, or fallback to a generic message
-    throw new Error(errorResponse.error || errorResponse.message || "Fejl ved login");
+    throw new Error(errorResponse.error || errorResponse.message || "Der opstod en fejl");
   }
   
   // For DELETE requests or other empty responses
   if (res.status === 204 || res.headers.get('content-length') === '0') {
     return null;
-}
+  }
 
-try {
+  try {
     return await res.json();
-} catch {
+  } catch {
     return null;
-}
+  }
 }
 
 export async function makeOptions(method: string, body: object | null, addToken?: boolean): Promise<RequestInit> {
