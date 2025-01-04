@@ -6,22 +6,7 @@ import { mealPlanApi } from "../lib/api/mealPlanApi";
 import { ShoppingListItem, MealPlan } from "../lib/types/types";
 import { useShoppingList } from "../shopping/ShoppingListProvider";
 
-const basicIngredients = [
-  "salt",
-  "grana padano",
-  "gurkemeje",
-  "tomatpuré",
-  "soya",
-  "eks. jomfru olivenolie",
-  "sesamfrø",
-  "paprika",
-  "grønsagsbouillon",
-  "estragon",
-  "dijonsennep",
-  "balsamikoeddike",
-  "hvedemel",
-  "tomatpuré",
-];
+const basicIngredients = ["salt", "grana padano", "gurkemeje", "tomatpuré", "soya", "eks. jomfru olivenolie", "sesamfrø", "paprika", "grønsagsbouillon", "estragon", "dijonsennep", "balsamikoeddike", "hvedemel"];
 
 export default function ShoppingListScreen() {
   const { username, isLoggedIn } = useAuth();
