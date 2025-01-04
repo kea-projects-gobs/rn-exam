@@ -1,17 +1,10 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
-  Pressable,
-  Alert,
-} from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Pressable, Alert } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { useState, useEffect } from "react";
 import { useAuth } from "../security/AuthProvider";
 import { mealPlanApi } from "../lib/api/mealPlanApi";
 import { ShoppingListItem, MealPlan } from "../lib/types/types";
+import { useShoppingList } from "../shopping/ShoppingListProvider";
 
 const basicIngredients = [
   "salt",
@@ -30,21 +23,17 @@ const basicIngredients = [
   "tomatpuré",
 ];
 
-// Extend ShoppingListItem to include checked state
-interface ShoppingListItemWithState extends ShoppingListItem {
-  checked: boolean;
-}
-
 export default function ShoppingListScreen() {
   const { username, isLoggedIn } = useAuth();
-  const [items, setItems] = useState<ShoppingListItemWithState[]>([]);
+  const { checkedItems, toggleItem, clearCheckedItems } = useShoppingList();
+  const [items, setItems] = useState<ShoppingListItem[]>([]);
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isFocused = useIsFocused();
 
-async function loadData() {
+  async function loadData() {
     if (!isLoggedIn()) {
       setLoading(false);
       return;
@@ -57,8 +46,7 @@ async function loadData() {
         mealPlanApi.getShoppingList(username!),
         mealPlanApi.getMealPlansByUser(username!),
       ]);
-      // Add checked property to each item
-      setItems(list.map((item) => ({ ...item, checked: false })));
+      setItems(list);
       setMealPlans(plans);
       setError(null);
     } catch (err) {
@@ -102,20 +90,21 @@ async function loadData() {
           style: "destructive",
           onPress: async () => {
             try {
-              setLoading(true); // Show loading while deleting
+              setLoading(true); // Show loading indicator while deleting
               await Promise.all(
                 mealPlans.map((plan) => mealPlanApi.deleteMealPlan(plan.id))
               );
-              // Clear states immediately after successful deletion
+              // Clear the states after successful deletion
               setItems([]);
               setMealPlans([]);
+              clearCheckedItems();
               setError(null);
             } catch (err) {
               console.error("Delete error:", err);
               setError("Kunne ikke slette indkøbsliste");
             } finally {
               setLoading(false);
-              // Reload data to ensure everything is in sync
+              // Reload the data after successful deletion, to stay in sync
               loadData();
             }
           },
@@ -124,31 +113,20 @@ async function loadData() {
     );
   };
 
-  const toggleItem = (productId: number) => {
-    setItems((currentItems) =>
-      currentItems.map((item) =>
-        item.productId === productId
-          ? { ...item, checked: !item.checked }
-          : item
-      )
-    );
-  };
+  // Calculate totals by separating basic and other items
+  const totalRemaining = [
+    ...Array.from(basicItemsMap.values()),
+    ...otherItems
+  ]
+    .filter((item) => !checkedItems.has(item.productId))
+    .reduce((sum, item) => sum + item.totalPrice, 0);
 
-  
-    // Calculate totals by separating basic and other items
-    const totalRemaining = [
-      ...Array.from(basicItemsMap.values()), // Use modified basic items
-      ...otherItems
-    ]
-      .filter((item) => !item.checked)
-      .reduce((sum, item) => sum + item.totalPrice, 0);
-  
-    // Calculate total for all items
-    const totalAll = [
-      ...Array.from(basicItemsMap.values()), // Use modified basic items
-      ...otherItems
-    ]
-      .reduce((sum, item) => sum + item.totalPrice, 0);
+  // Calculate total for all items
+  const totalAll = [
+    ...Array.from(basicItemsMap.values()),
+    ...otherItems
+  ]
+    .reduce((sum, item) => sum + item.totalPrice, 0);
 
   function onRefresh() {
     setRefreshing(true);
@@ -179,7 +157,7 @@ async function loadData() {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      >
+    >
       {/* Header view */}
       <View className="p-4 space-y-4">
         <View className="flex-row justify-between items-center mb-4 w-full">
@@ -188,7 +166,7 @@ async function loadData() {
           </Text>
           {items.length > 0 && (
             <View className="ml-4">
-              <Pressable 
+              <Pressable
                 onPress={handleDeleteMealPlan}
                 className="bg-red-500 px-4 py-2 rounded-lg"
               >
@@ -215,7 +193,7 @@ async function loadData() {
                   onPress={() => toggleItem(item.productId)}
                   className={`flex-row justify-between items-center p-4 rounded-lg mb-2
                     ${
-                      item.checked
+                      checkedItems.has(item.productId)
                         ? "bg-gray-200 dark:bg-gray-700"
                         : "bg-gray-100 dark:bg-gray-800"
                     }`}
@@ -224,12 +202,12 @@ async function loadData() {
                     <View
                       className={`w-6 h-6 rounded-full border-2 mr-3 
                       ${
-                        item.checked
+                        checkedItems.has(item.productId)
                           ? "bg-green-500 border-green-500"
                           : "border-gray-400"
                       }`}
                     >
-                      {item.checked && (
+                      {checkedItems.has(item.productId) && (
                         <Text className="text-white text-center">✓</Text>
                       )}
                     </View>
@@ -237,7 +215,7 @@ async function loadData() {
                       <Text
                         className={`text-lg 
                         ${
-                          item.checked
+                          checkedItems.has(item.productId)
                             ? "text-gray-500 dark:text-gray-400 line-through"
                             : "text-gray-900 dark:text-white"
                         }`}
@@ -247,7 +225,7 @@ async function loadData() {
                       <Text
                         className={`
                         ${
-                          item.checked
+                          checkedItems.has(item.productId)
                             ? "text-gray-400 dark:text-gray-500"
                             : "text-gray-500 dark:text-gray-400"
                         }`}
@@ -259,7 +237,7 @@ async function loadData() {
                   <Text
                     className={`text-lg 
                     ${
-                      item.checked
+                      checkedItems.has(item.productId)
                         ? "text-gray-400 dark:text-gray-500 line-through"
                         : "text-gray-500 dark:text-gray-400"
                     }`}
@@ -289,7 +267,7 @@ async function loadData() {
                   onPress={() => toggleItem(item.productId)}
                   className={`flex-row justify-between items-center p-4 rounded-lg mb-2
                     ${
-                      item.checked
+                      checkedItems.has(item.productId)
                         ? "bg-gray-200 dark:bg-gray-700"
                         : "bg-gray-100 dark:bg-gray-800"
                     }`}
@@ -298,12 +276,12 @@ async function loadData() {
                     <View
                       className={`w-6 h-6 rounded-full border-2 mr-3 
                       ${
-                        item.checked
+                        checkedItems.has(item.productId)
                           ? "bg-green-500 border-green-500"
                           : "border-gray-400"
                       }`}
                     >
-                      {item.checked && (
+                      {checkedItems.has(item.productId) && (
                         <Text className="text-white text-center">✓</Text>
                       )}
                     </View>
@@ -311,7 +289,7 @@ async function loadData() {
                       <Text
                         className={`text-lg 
                         ${
-                          item.checked
+                          checkedItems.has(item.productId)
                             ? "text-gray-500 dark:text-gray-400 line-through"
                             : "text-gray-900 dark:text-white"
                         }`}
@@ -321,7 +299,7 @@ async function loadData() {
                       <Text
                         className={`
                         ${
-                          item.checked
+                          checkedItems.has(item.productId)
                             ? "text-gray-400 dark:text-gray-500"
                             : "text-gray-500 dark:text-gray-400"
                         }`}
@@ -333,7 +311,7 @@ async function loadData() {
                   <Text
                     className={`text-lg 
                     ${
-                      item.checked
+                      checkedItems.has(item.productId)
                         ? "text-gray-400 dark:text-gray-500 line-through"
                         : "text-gray-500 dark:text-gray-400"
                     }`}
@@ -367,5 +345,3 @@ async function loadData() {
     </ScrollView>
   );
 }
-
-
