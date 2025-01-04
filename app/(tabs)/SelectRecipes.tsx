@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthProvider';
 import { mealPlanApi } from '../lib/api/mealPlanApi';
 import { Recipe, MealPlanRequest } from '../lib/types/types';
 import { recipeApi } from '../lib/api/recipeApi';
+import DayPicker from '../components/recipeComponents/dayPicker';
 
 export default function SelectRecipesScreen() {
   const { username, isLoggedIn } = useAuth();
@@ -70,83 +71,7 @@ export default function SelectRecipesScreen() {
     }
   };
 
-  const renderPicker = (day: string) => {
-    const selectedRecipe = getRecipeForDay(day);
-    const isOpen = openPickerDay === day;
-
-    return (
-      <View key={day} className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg mb-2">
-        <Text className="text-lg font-bold text-gray-900 dark:text-white mb-2">{day}</Text>
-        
-        <Pressable 
-          onPress={() => setOpenPickerDay(day)}
-          className="bg-white dark:bg-gray-700 p-4 rounded-lg flex-row justify-between items-center"
-        >
-          <Text className="text-gray-900 dark:text-white">
-            {selectedRecipe ? 
-              recipes.find(r => r.id === selectedRecipe.recipeId)?.name || 'Vælg opskrift' 
-              : 'Vælg opskrift'}
-          </Text>
-          <Text className="text-gray-500">▼</Text>
-        </Pressable>
-
-        <Modal
-          visible={isOpen}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setOpenPickerDay(null)}
-        >
-          <Pressable 
-            className="flex-1 bg-black/50"
-            onPress={() => setOpenPickerDay(null)}
-          >
-            <View className="mt-auto bg-white dark:bg-gray-800 rounded-t-3xl overflow-hidden">
-              <View className="p-4 border-b border-gray-200 dark:border-gray-700 flex-row justify-between items-center">
-                <Text className="text-lg font-bold text-gray-900 dark:text-white">
-                  Vælg opskrift til {day}
-                </Text>
-                <Pressable onPress={() => setOpenPickerDay(null)}>
-                  <Text className="text-blue-500 font-medium">Luk</Text>
-                </Pressable>
-              </View>
-
-              <View className="max-h-96">
-                <ScrollView>
-                  <Pressable
-                    className="p-4 border-b border-gray-200 dark:border-gray-700"
-                    onPress={() => {
-                      handleRecipeSelect(0, day);
-                      setOpenPickerDay(null);
-                    }}
-                  >
-                    <Text className="text-gray-900 dark:text-white text-lg">
-                      Ingen opskrift
-                    </Text>
-                  </Pressable>
-
-                  {recipes.map(recipe => (
-                    <Pressable
-                      key={recipe.id}
-                      className={`p-4 border-b border-gray-200 dark:border-gray-700 
-                        ${selectedRecipe?.recipeId === recipe.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                      onPress={() => {
-                        handleRecipeSelect(recipe.id, day);
-                        setOpenPickerDay(null);
-                      }}
-                    >
-                      <Text className="text-gray-900 dark:text-white text-lg">
-                        {recipe.name}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </ScrollView>
-              </View>
-            </View>
-          </Pressable>
-        </Modal>
-      </View>
-    );
-  };
+  
 
   return (
     <ScrollView className="flex-1 bg-white dark:bg-gray-900">
@@ -156,7 +81,18 @@ export default function SelectRecipesScreen() {
         </Text>
 
         <View className="space-y-2">
-          {days.map(renderPicker)}
+          {days.map(day => (
+            <DayPicker
+              key={day}
+              day={day}
+              recipes={recipes}
+              selectedRecipe={getRecipeForDay(day)}
+              isOpen={openPickerDay === day}
+              onOpen={setOpenPickerDay}
+              onClose={() => setOpenPickerDay(null)}
+              onSelectRecipe={handleRecipeSelect}
+            />
+          ))}
         </View>
 
         <Pressable
