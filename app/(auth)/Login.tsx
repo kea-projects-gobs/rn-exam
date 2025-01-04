@@ -1,6 +1,6 @@
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { useState } from 'react';
-import { useAuth } from '../security/AuthProvider';
+import { useAuth } from '../context/AuthProvider';
 import { router } from 'expo-router';
 
 export default function LoginScreen() {

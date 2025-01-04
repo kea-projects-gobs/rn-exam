@@ -1,4 +1,4 @@
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "../context/AuthProvider";
 import { Redirect } from "expo-router";
 
 type Props = {

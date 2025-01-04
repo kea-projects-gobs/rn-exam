@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { useAuth } from '../security/AuthProvider';
+import { useAuth } from '../context/AuthProvider';
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState('');

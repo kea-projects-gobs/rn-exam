@@ -54,7 +54,7 @@ export interface MealPlanRequest {
   dayOfWeek: string;
 }
 
-export interface ShoppingListItem {
+export interface ShoppingListItemInterface {
   productId: number;
   name: string;
   price: number;

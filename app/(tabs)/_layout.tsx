@@ -1,6 +1,5 @@
 import { Tabs } from "expo-router";
 import { useColorScheme } from "react-native";
-import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 

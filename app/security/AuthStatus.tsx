@@ -1,5 +1,5 @@
 import { Text, Pressable } from 'react-native';
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "../context/AuthProvider";
 import { Link } from "expo-router";
 
 export default function AuthStatus() {

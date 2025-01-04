@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
-import AuthProvider from './security/AuthProvider';
-import { ShoppingListProvider } from './shopping/ShoppingListProvider';
+import AuthProvider from './context/AuthProvider';
+import { ShoppingListProvider } from './context/ShoppingListProvider';
 import '../global.css';
 
 export default function RootLayout() {
