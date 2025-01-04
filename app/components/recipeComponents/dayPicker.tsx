@@ -9,7 +9,7 @@ interface DayPickerProps {
   isOpen: boolean;
   onOpen: (day: string) => void;
   onClose: () => void;
-  onSelectRecipe: (recipeId: number, day: string) => void;
+  onSelectRecipe: (recipeId: number | null, day: string) => void;
 }
 
 export default function DayPicker({ 

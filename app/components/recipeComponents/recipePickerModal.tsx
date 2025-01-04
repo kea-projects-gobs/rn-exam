@@ -7,7 +7,7 @@ interface RecipePickerModalProps {
   recipes: Recipe[];
   selectedRecipe?: MealPlanRequest;
   onClose: () => void;
-  onSelectRecipe: (recipeId: number, day: string) => void;
+  onSelectRecipe: (recipeId: number | null, day: string) => void;
 }
 
 export default function RecipePickerModal({
@@ -44,7 +44,7 @@ export default function RecipePickerModal({
               <Pressable
                 className="p-4 border-b border-gray-200 dark:border-gray-700"
                 onPress={() => {
-                  onSelectRecipe(0, day);
+                  onSelectRecipe(null, day);
                   onClose();
                 }}
               >

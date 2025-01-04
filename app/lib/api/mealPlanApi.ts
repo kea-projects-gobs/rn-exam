@@ -1,5 +1,5 @@
 import { API_URL } from "./settings";
-import { MealPlan, MealPlanRequest, ShoppingListItem } from "../types/types";
+import { MealPlan, MealPlanRequest, ShoppingListItemInterface } from "../types/types";
 import { makeOptions, handleHttpErrors } from "./utils/fetchUtils";
 
 const MEALPLAN_URL = `${API_URL}/mealplan`;
@@ -17,7 +17,7 @@ export const mealPlanApi = {
         return handleHttpErrors(res);
     },
 
-    async getShoppingList(username: string): Promise<ShoppingListItem[]> {
+    async getShoppingList(username: string): Promise<ShoppingListItemInterface[]> {
         const options = await makeOptions("GET", null, true);
         const res = await fetch(`${MEALPLAN_URL}/shopping-list/${username}`, options);
         return handleHttpErrors(res);

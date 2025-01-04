@@ -50,7 +50,7 @@ export interface MealPlan {
 
 export interface MealPlanRequest {
   username: string;
-  recipeId: number;
+  recipeId: number | null;
   dayOfWeek: string;
 }
 

@@ -29,13 +29,14 @@ export default function SelectRecipesScreen() {
     loadRecipes();
   }, []);
 
-  const handleRecipeSelect = (recipeId: number, day: string) => {
+  const handleRecipeSelect = (recipeId: number | null, day: string) => {
     if (username) {
-      // Remove any existing recipe for this day
+      // Just update local state
       const filtered = selectedRecipes.filter(r => r.dayOfWeek !== day);
       
-      // Only add the recipe if it's not 0 (no recipe)
-      if (recipeId !== 0) {
+      if (recipeId === null) {
+        setSelectedRecipes(filtered);
+      } else {
         setSelectedRecipes([
           ...filtered,
           {
@@ -44,8 +45,6 @@ export default function SelectRecipesScreen() {
             dayOfWeek: day
           }
         ]);
-      } else {
-        setSelectedRecipes(filtered);
       }
     }
   };
@@ -55,14 +54,27 @@ export default function SelectRecipesScreen() {
   };
 
   const generateShoppingList = async () => {
-    if (!isLoggedIn()) {
+    if (!isLoggedIn() || !username) {
       Alert.alert('Login påkrævet', 'Du skal være logget ind');
       return router.push('/(auth)/Login');
     }
-
+  
     try {
       setLoading(true);
-      await mealPlanApi.createMealPlan(selectedRecipes);
+      
+      // Create properly typed meal plan requests
+      const mealPlanRequests: MealPlanRequest[] = days.map(day => {
+        const selectedRecipe = selectedRecipes.find(r => r.dayOfWeek === day);
+        return {
+          username,
+          recipeId: selectedRecipe?.recipeId ?? null,
+          dayOfWeek: day
+        };
+      });
+  
+      // Send all changes at once
+      await mealPlanApi.createMealPlan(mealPlanRequests);
+      
       router.push('/(tabs)/ShoppingList');
     } catch (error) {
       Alert.alert('Fejl', 'Kunne ikke generere indkøbsliste');
