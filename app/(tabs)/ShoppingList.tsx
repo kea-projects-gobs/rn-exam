@@ -55,15 +55,24 @@ export default function ShoppingListScreen() {
   }, [isFocused]);
 
   const basicItemsMap = new Map();
+
+  // Iterate through all items, and find the basic ingredients
   items.forEach((item) => {
+    // Check if the item is a basic ingredient
     if (basicIngredients.includes(item.name.toLowerCase())) {
+      // Only add if we havent seen this item before
+      // This prevents duplicates, and ensure we only get one of each basic ingredient
       if (!basicItemsMap.has(item.name.toLowerCase())) {
+        // Add the item to the map
         basicItemsMap.set(item.name.toLowerCase(), { ...item, quantity: 1, totalPrice: item.price });
       }
     }
   });
+
+  // Convert the Map back to an array of basic items
   const basicItems = Array.from(basicItemsMap.values());
 
+  // Filter out the basic ingredients, and only keep the other items
   const otherItems = items.filter(
     (item) => !basicIngredients.includes(item.name.toLowerCase())
   );
@@ -104,17 +113,24 @@ export default function ShoppingListScreen() {
 
   // Calculate totals by separating basic and other items
   const totalRemaining = [
-    ...Array.from(basicItemsMap.values()),
-    ...otherItems
+    // Convert the Map back to an array of basic items
+    ...Array.from(basicItemsMap.values()), 
+    // Add the other items to the array
+    ...otherItems 
   ]
-    .filter((item) => !checkedItems.has(item.productId))
+    // Filter out items that are checked
+    .filter((item) => !checkedItems.has(item.productId)) 
+    // Sum up the total price of the remaining items
     .reduce((sum, item) => sum + item.totalPrice, 0);
 
-  // Calculate total for all items
+  // Calculate total for all items (both checked and unchecked )
   const totalAll = [
+    // Convert the Map back to an array of basic items
     ...Array.from(basicItemsMap.values()),
+    // Add the other items to the array (all non basic items)
     ...otherItems
   ]
+    // Sum up the total price of all items
     .reduce((sum, item) => sum + item.totalPrice, 0);
 
   function onRefresh() {
