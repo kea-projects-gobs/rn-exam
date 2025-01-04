@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import { ShoppingListItemInterface } from "../../lib/types/types";
-import ShoppingListItem from "../shoppingComponents/ShoppingListItem";
+import ShoppingListItem from "./ShoppingListItem";
 
 interface OtherIngredientsProps {
   items: ShoppingListItemInterface[];
