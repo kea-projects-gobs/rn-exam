@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable, Alert, Modal } from 'react-native';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { useAuth } from '../security/AuthProvider';
+import { useAuth } from '../context/AuthProvider';
 import { mealPlanApi } from '../lib/api/mealPlanApi';
 import { Recipe, MealPlanRequest } from '../lib/types/types';
 import { recipeApi } from '../lib/api/recipeApi';

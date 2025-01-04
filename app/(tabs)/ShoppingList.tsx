@@ -1,10 +1,10 @@
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Alert } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { useState, useEffect } from "react";
-import { useAuth } from "../security/AuthProvider";
+import { useAuth } from "../context/AuthProvider";
 import { mealPlanApi } from "../lib/api/mealPlanApi";
 import { ShoppingListItemInterface, MealPlan } from "../lib/types/types";
-import { useShoppingList } from "../shopping/ShoppingListProvider";
+import { useShoppingList } from "../context/ShoppingListProvider";
 import BasicIngredients from "../components/shoppingcomponents/BasicIngredients";
 import ShoppingListHeader from "../components/shoppingcomponents/ShoppingListHeader";
 import OtherIngredients from "../components/shoppingcomponents/OtherIngredients";
