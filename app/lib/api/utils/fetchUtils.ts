@@ -4,7 +4,13 @@ export async function handleHttpErrors(res: Response) {
   // Special case for login endpoint failures
   if (res.url.includes('/auth/login') && !res.ok) {
     const errorResponse = await res.json();
-    throw new Error(errorResponse.error || errorResponse.message || "Fejl ved login");
+    throw new Error(errorResponse.message || "Fejl ved login");
+  }
+
+  // Special case for register endpoint failures
+  if (res.url.includes('/auth/register') && !res.ok) {
+    const errorResponse = await res.json();
+    throw new Error(errorResponse.message || "Fejl ved registrering");
   }
 
   // Handle expired token for other endpoints
