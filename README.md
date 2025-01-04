@@ -29,7 +29,7 @@ A React Native mobile application that helps users plan their weekly meals and g
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/kea-projects-gobs/rn-exam
+git clone https://github.com/kea-projects-gobs/rn-exam.git
 ```
 2. Navigate to the project directory:
 ```bash
